@@ -1,0 +1,30 @@
+# vendor binaries — extracted from your own camera, never committed
+package/anyka-libs/lib/
+package/anyka-modules/files/
+board/anyka/stock/
+*.ko
+*.so
+*.so.*
+*.a
+
+# flash dumps and build images
+*.bin
+*.squashfs
+*.sqsh4
+uImage
+zImage
+full.bin
+mtd*.bin
+
+# local leftovers
+*.bak
+
+# keep the placeholder notes
+!**/README.txt
+dl/
+package/anyka-libs/etc/
+package/ipcd/src/
+!docs/img/*.jpg
+
+# the package and what it is built from
+dist/

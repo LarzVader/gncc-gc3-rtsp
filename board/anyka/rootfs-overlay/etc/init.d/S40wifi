@@ -1,0 +1,28 @@
+#!/bin/sh
+[ "$1" = "start" ] || exit 0
+log() { echo "S40wifi: $*" >> /tmp/sd/boot.log 2>/dev/null; echo "S40wifi: $*"; }
+M=/usr/modules
+log "start"
+# the GC3 switches the Wi-Fi chip with a GPIO, stock wifi_module_load.sh does the same
+[ -d /sys/class/leds/wifi_pwr ] && echo 1 > /sys/class/leds/wifi_pwr/brightness
+modprobe cfg80211; log "cfg80211 rc=$?"
+insmod $M/ak_hcd.ko; log "ak_hcd rc=$?"
+insmod $M/atbm603x_x_usb.ko; log "atbm rc=$?"
+i=0; while [ ! -e /sys/class/net/wlan0 ] && [ $i -lt 120 ]; do sleep 0.5; i=$((i+1)); done
+[ -e /sys/module/atbm603x_x_usb/parameters/atbm_printk_mask ] && \
+  echo 0 > /sys/module/atbm603x_x_usb/parameters/atbm_printk_mask
+log "wlan0 $([ -e /sys/class/net/wlan0 ] && echo up || echo MISSING)"
+[ -e /sys/class/net/wlan0 ] || exit 0
+# ipcd, when running, owns wlan0 — give it a moment to claim it
+sleep 8
+pgrep -x ipcd >/dev/null 2>&1 && { echo "wifi: ipcd owns wlan0"; exit 0; }
+SRC=/etc/config/wifi.conf
+CONF=/tmp/wpa_supplicant.conf
+[ -f $SRC ] || { log "no $SRC"; exit 0; }
+SSID=$(sed -n 's/^ssid=//p' $SRC | tr -d '\r' | head -1)
+PSK=$(sed -n 's/^psk=//p' $SRC | tr -d '\r' | head -1)
+printf 'network={\n ssid="%s"\n psk="%s"\n scan_ssid=1\n}\n' "$SSID" "$PSK" > $CONF
+chmod 600 $CONF
+log "starting wpa_supplicant for ssid=$SSID"
+wpa_supplicant -B -Dnl80211 -i wlan0 -c $CONF; log "wpa rc=$?"
+udhcpc -b -i wlan0 -S -x hostname:gc3; log "udhcpc rc=$?"

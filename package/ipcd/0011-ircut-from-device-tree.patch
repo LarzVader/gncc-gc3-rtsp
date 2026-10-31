@@ -1,0 +1,77 @@
+--- a/src/ipcd/src/ir.c	2026-10-31 00:48:05.687689799 +0100
++++ b/src/ipcd/src/ir.c	2026-10-31 00:48:05.698859442 +0100
+@@ -151,6 +151,7 @@
+ 
+     /* Resolved sysfs paths after probing (NULL if not available). */
+     const char     *ircut_a;
++    int             ircut_a_day;   /* level of line A for day, from the DT */
+     const char     *ircut_b;
+     int             irled_ok;       /* 1 if we can write irled */
+ 
+@@ -178,13 +179,9 @@
+ static void ircut_set(int to_night)
+ {
+     if (!I.ircut_a || !I.ircut_b) return;
+-    if (to_night) {
+-        sysfs_write_int(I.ircut_a, 1);
+-        sysfs_write_int(I.ircut_b, 0);
+-    } else {
+-        sysfs_write_int(I.ircut_a, 0);
+-        sysfs_write_int(I.ircut_b, 1);
+-    }
++    int a = to_night ? !I.ircut_a_day : I.ircut_a_day;
++    sysfs_write_int(I.ircut_a, a);
++    sysfs_write_int(I.ircut_b, !a);
+     usleep(100 * 1000);
+     sysfs_write_int(I.ircut_a, 0);
+     sysfs_write_int(I.ircut_b, 0);
+@@ -355,6 +352,29 @@
+     return NULL;
+ }
+ 
++/* Filter pins and polarity differ between boards, the device tree has them. */
++static int dt_ircut_read(const char *name, char *buf, size_t len)
++{
++    char path[64];
++    snprintf(path, sizeof(path), "/proc/device-tree/ircut/%s", name);
++    int fd = open(path, O_RDONLY);
++    if (fd < 0) return -1;
++    ssize_t n = read(fd, buf, len - 1);
++    close(fd);
++    if (n <= 0) return -1;
++    buf[n] = 0;
++    return 0;
++}
++
++static const char *dt_ircut_probe(const char *name, char *path, size_t len)
++{
++    char num[8];
++    if (dt_ircut_read(name, num, sizeof(num)) != 0) return NULL;
++    snprintf(path, len, "/sys/class/gpio/gpio%s/value", num);
++    const char *cand[] = { path, NULL };
++    return probe_ircut(cand);
++}
++
+ /* ---------------------------------------------------------------- */
+ /* Public API                                                       */
+ /* ---------------------------------------------------------------- */
+@@ -365,8 +385,17 @@
+ 
+     /* Probe hardware. */
+     I.irled_ok = path_exists(IRLED_BRIGHTNESS);
+-    I.ircut_a  = probe_ircut(IRCUT_A_CANDIDATES);
+-    I.ircut_b  = probe_ircut(IRCUT_B_CANDIDATES);
++    static char dt_a[48], dt_b[48];
++    char level[4];
++    I.ircut_a  = dt_ircut_probe("ircut-a", dt_a, sizeof(dt_a));
++    I.ircut_b  = dt_ircut_probe("ircut-b", dt_b, sizeof(dt_b));
++    if (I.ircut_a && I.ircut_b) {
++        if (dt_ircut_read("ircut-a-day-level", level, sizeof(level)) == 0)
++            I.ircut_a_day = (level[0] == '1');
++    } else {
++        I.ircut_a  = probe_ircut(IRCUT_A_CANDIDATES);
++        I.ircut_b  = probe_ircut(IRCUT_B_CANDIDATES);
++    }
+ 
+     fprintf(stderr,
+         "[ir] hardware probe: irled=%s, ircut_a=%s, ircut_b=%s\n",
