@@ -225,7 +225,7 @@ ROOTFS build.
   these images.
 - Restarts of the capture: 12 in a row from the web page, 50 starts in all with the cases below.
   A connected client got its end after 1 to 2 seconds, and the picture was back within 7 to 8
-  seconds. No restart failed, free memory stayed between 24.5 and 25.6 MB, with 18 to 22 threads,
+  seconds. No restart failed, free memory stayed between 24.6 and 25.0 MB, with 18 to 22 threads,
   and the kernel log showed no errors.
 - The cases: five changes 300 ms apart gave one restart with the last value; the outer values of
   the web page, both codecs, a GOP of 10 seconds, a forced day and night mode, the snapshot
@@ -234,9 +234,13 @@ ROOTFS build.
   a frame rate of 60 in the saved configuration: both streams run at 30.
 - Stopping `ipcd`: the camera restarts by itself and comes back after about 50 seconds. A stop
   that hangs and encoders that fail were tried on a GT1 Pro only, with a test build.
-- The RTP counter, with this `ipcd` from RAM on the second camera: 8 wraps without a stop, 7 of
+- The RTP counter, with this `ipcd` from RAM on the second camera: 8 wraps without a stop, 4 of
   them on the end of a frame. With the old `ipcd` on the first camera, 2 of 4 wraps ended in a
   stop.
+- RTSP sessions, on the same camera: GStreamer's `rtspsrc` ran for 540 s without a break, RTCP in
+  a session did no harm, and a player reading too slowly got 135 of 135 responses clean, none in a
+  video packet. A player that stopped reading got its end. The clock from an NTP server was set at
+  the start, with a test server on the LAN.
 - The login, on the same camera: a header for the requested path gets 200, a header for another
   path 401, also for POST.
 - A build with only the RTP and the login fix was written to both cameras over SSH and read back.
