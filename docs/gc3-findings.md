@@ -221,8 +221,10 @@ ROOTFS build.
 
 - This release changes `bin/ipcd` in the APP image, the version file and the image checksums.
   The ROOTFS image and the kernel are those of release 1.0.
-- The `ipcd` of this release ran from RAM on the second camera. The installer did not run with
-  these images.
+- The `ipcd` of this release was tested from RAM on the second camera, then written to both
+  cameras over Wi-Fi and read back. After that the login, 8 seconds of video and the kernel log
+  were fine, and it has not yet run for long from flash. The installer did not run with these
+  images.
 - Restarts of the capture: 12 in a row from the web page, 50 starts in all with the cases below.
   A connected client got its end after 1 to 2 seconds, and the picture was back within 7 to 8
   seconds. No restart failed, free memory stayed between 24.6 and 25.0 MB, with 18 to 22 threads,
@@ -240,7 +242,7 @@ ROOTFS build.
 - RTSP sessions, on the same camera: GStreamer's `rtspsrc` ran for 540 s without a break, RTCP in
   a session did no harm, and a player reading too slowly got 135 of 135 responses clean, none in a
   video packet. A player that stopped reading got its end. The clock from an NTP server was set at
-  the start, with a test server on the LAN.
+  the start, with a test server on the LAN and later with `chrony`.
 - The login, on the same camera: a header for the requested path gets 200, a header for another
   path 401, also for POST.
 - A build with only the RTP and the login fix was written to both cameras over SSH and read back.

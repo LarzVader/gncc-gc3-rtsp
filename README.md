@@ -177,8 +177,8 @@ You replace the firmware of a device, at your own risk and only on a camera you 
   the app, cloud recordings, motion notifications, two-way talk.
 - **Tested on two cameras**, both with stock firmware 7.3.77 and the same board. That is not
   much. The installer ran on both with builds from just before 1.0, not with the images of
-  this release. The `ipcd` of this release ran from RAM on the second camera, and
-  `docs/gc3-findings.md` says what ran where. The installer refuses a camera whose files
+  this release. The `ipcd` of this release was tested from RAM on the second camera and then
+  written to both, and `docs/gc3-findings.md` says what ran where. The installer refuses a camera whose files
   differ, unless you force it.
 - **The way back has not been tried on a GC3.** `restore-stock.txt` wrote and checked the stock
   firmware once on a GT1 Pro, from a backup without Wi-Fi settings and cloud data. The reset
