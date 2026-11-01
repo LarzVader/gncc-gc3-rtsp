@@ -58,10 +58,15 @@ $OUT/host/bin/unsquashfs -d stock/app $BACKUP/mtd7.bin
 installer/make-release.sh $OUT stock 1.0.1
 ```
 
-`dist/sdcard` is what goes on the card. If you used the same sources and stock firmware
-as the release, `images.sha256` has the same checksums for ROOTFS and APP. The kernel is
-built with a fixed time stamp and without the name of the build machine (`external.mk`), so
-it should come out the same as well.
+`dist/sdcard` is what goes on the card. `make-release.sh` writes `images.sha256` from your own
+build, so the installer checks the camera's result against your images.
+
+Do not expect your images to match the release byte for byte. BusyBox holds its build time, so
+ROOTFS differs. Measured on a GK2 build of the same tree, not on this model: from a clean clone,
+compared with a build on the same machine at another time and path, `ipcd` and the uImage came
+out the same (the kernel is built with a fixed time stamp and without the name of the build
+machine, see `external.mk`). ROOTFS and APP did not, and `libnl-genl` differed at the same size,
+for a reason nobody has looked into.
 
 One quirk: a build in which the kernel was (re)built leaves entries in the ROOTFS module
 index (`modules.dep`, `modules.alias`, `modules.symbols` and their `.bin` files) for kernel
@@ -86,4 +91,6 @@ A release has a source bundle, and [THIRD-PARTY.md](../THIRD-PARTY.md) says what
 uClibc-ng, the GCC runtime and `librt.so` come as binaries from the toolchain and are not in
 it. To put that bundle together: `make legal-info` in
 Buildroot (with the same `O=` and `BR2_EXTERNAL=`), then
-`installer/make-sources.sh $OUT $BR 1.0.1`.
+`installer/make-sources.sh $OUT $BR 1.0.1`. `make legal-info` ends with a checksum error at the
+vendor kernel. That is expected: the other packages are saved by then, and `make-sources.sh` adds
+the kernel.
