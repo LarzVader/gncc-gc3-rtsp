@@ -129,11 +129,17 @@ After the vendor sensor module has initialised the SC2331, its flip/mirror regis
 i2ctransfer -f -y 0 w3@0x30 0x32 0x21 0x00
 ```
 
-That line is in `/etc/config/sensor.init`, which `S60ipcd` runs 15 seconds after `ipcd`
-started and then every 60 seconds. Measured on a camera: about 40 seconds after power-on
-the register still read `0x66`, after 85 seconds `0x00`. So the picture of every start is
-upside down for about the first minute. The ISP's own flip (`--flip`, `--mirror` in `ipcd`)
-was not tried on this sensor, as the register write does the job.
+That line is in `/etc/config/sensor.init`. `ipcd` runs it at every start of the capture, right
+after loading the sensor configuration, which sets the register back to `0x66` (patch 0015).
+`S60ipcd` also runs it 15 seconds after `ipcd` started and then every 60 seconds. Measured with
+1.0.1 from RAM, about four readings a second: from before the first start of `ipcd` after a
+restart of the camera until the stream ran, the register read `0x00` throughout. With
+`sensor.init` removed, a restart of the capture set it to `0x66`, and it stayed there. A real
+power-on has not been measured with this version. Up to version 1.0 only `S60ipcd` ran the
+line: about 40 seconds after power-on the register still read `0x66`, after 85 seconds `0x00`,
+so the picture of every start was upside down for about the first minute. The ISP's own flip
+(`--flip`, `--mirror` in `ipcd`) was not tried on this sensor, as the register write does the
+job.
 
 ## Wi-Fi
 
@@ -196,9 +202,10 @@ ROOTFS build.
 
 ## Test status of release 1.0
 
-- The installer ran on both cameras from the stock firmware, on the second one with a
-  check-only run first. The installer in this release differs from the one that ran only in
-  comment and message strings.
+- The installer ran on both cameras from the stock firmware, on the first one with a
+  check-only run first. The installer in this release differs from the one that ran on the
+  second camera only in comment and message strings. The one that ran on the first camera did
+  not write `sensor.init` yet.
 - The kernel was rebuilt after those runs, with the same source and configuration, so that
   it no longer carries the name of the build machine. The three images of this release, by
   the checksums in `images.sha256`, were then written to the second camera over SSH, and it
@@ -210,6 +217,38 @@ ROOTFS build.
 - Not tested on any GC3: the reset button recovery, `restore-stock.txt`,
   `FORCE_UNKNOWN_FIRMWARE`, the speaker, the microphone.
 
+## Test status of release 1.0.1
+
+- This release changes `bin/ipcd` in the APP image, the version file and the image checksums.
+  The ROOTFS image and the kernel are those of release 1.0.
+- The `ipcd` of this release ran from RAM on the second camera. The installer did not run with
+  these images.
+- Restarts of the capture: 12 in a row from the web page, 50 starts in all with the cases below.
+  A connected client got its end after 1 to 2 seconds, and the picture was back within 7 to 8
+  seconds. No restart failed, free memory stayed between 24.5 and 25.6 MB, with 18 to 22 threads,
+  and the kernel log showed no errors.
+- The cases: five changes 300 ms apart gave one restart with the last value; the outer values of
+  the web page, both codecs, a GOP of 10 seconds, a forced day and night mode, the snapshot
+  without the main stream; ports 80 and 22 refused, a free port taken; the address taken away:
+  back after about half a minute; no DHCP answer for 100 seconds: back in the next try after that;
+  a frame rate of 60 in the saved configuration: both streams run at 30.
+- Stopping `ipcd`: the camera restarts by itself and comes back after about 50 seconds. A stop
+  that hangs and encoders that fail were tried on a GT1 Pro only, with a test build.
+- The RTP counter, with this `ipcd` from RAM on the second camera: 8 wraps without a stop, 7 of
+  them on the end of a frame. With the old `ipcd` on the first camera, 2 of 4 wraps ended in a
+  stop.
+- The login, on the same camera: a header for the requested path gets 200, a header for another
+  path 401, also for POST.
+- A build with only the RTP and the login fix was written to both cameras over SSH and read back.
+  Both then ran for about three hours with two connections each, one of them without a break: no
+  stop of this kind, where the old code would have had about 12. The `send failed` lines in that
+  time came from clients that closed their connection. The second camera then ran all three images
+  of that build, the first one the same ROOTFS and APP images and the kernel from before the
+  rebuild described above.
+- Still not tested on any GC3: the reset button recovery, `restore-stock.txt`,
+  `FORCE_UNKNOWN_FIRMWARE`, the speaker, the microphone. A session long enough for the RTP
+  timestamp to wrap (13.26 hours) has not been watched.
+
 ## Open points
 
 - Why the red LED is inverted, and whether it is the driver or the wiring.
@@ -219,4 +258,4 @@ ROOTFS build.
   tested either.
 - The SAR ADC light sensor input: unused.
 - Other board revisions and other stock firmware versions: unknown. The installer compares
-  every vendor file it uses with the tested ones and stops on a difference.
+  every vendor file it uses with the tested ones and stops on a difference, unless you force it.

@@ -103,9 +103,8 @@ Unter `http://<kamera>/` gibt es außerdem eine kleine Webseite, mit demselben B
 ## Gut zu wissen
 
 - **Gib der Kamera eine feste Adresse** im Router, damit ihre Stream-Adresse gleich bleibt.
-- **Etwa in der ersten Minute nach dem Einschalten steht das Bild auf dem Kopf.** Der Sensor der GC3
-  startet gedreht, und die Firmware stellt die Ausrichtung ein, sobald der Stream läuft, danach jede
-  Minute neu. Häng die Kamera also normal herum auf.
+- **Häng die Kamera normal herum auf.** Der Sensor der GC3 startet gedreht, und die Firmware stellt
+  die Ausrichtung bei jedem Start der Aufnahme ein, danach jede Minute neu.
 - **Nachts wird das Bild alle 10 Minuten für etwa 5 Sekunden dunkel.** Die Firmware nutzt keinen
   Lichtsensor und schaltet deshalb ab und zu ihr IR-Licht aus, um zu prüfen, ob es schon Tag ist.
   `ir_peek_s` in `ipcd.conf` stellt den Abstand in Sekunden ein.
@@ -169,11 +168,12 @@ Du ersetzt die Firmware eines Geräts, auf eigene Gefahr und nur bei einer Kamer
 - **Du verlierst die Garantie** und alles, was App und Cloud gemacht haben: Fernzugriff über die App,
   Cloud-Aufnahmen, Bewegungsmeldungen, Gegensprechen.
 - **Getestet an zwei Kameras**, beide mit Originalfirmware 7.3.77 und derselben Platine. Das ist nicht viel.
-  Die Abbilder dieses Release sind genau die, die die zweite Kamera installiert hat und mit denen sie läuft;
-  die erste hat einen früheren Bau derselben Quellen installiert und läuft nach einem Update mit demselben
-  Kernel und APP-Abbild. Eine Kamera mit abweichenden Dateien lehnt der Installer ab, außer du erzwingst es.
-- **Der Rückweg ist an der GC3 nicht ausprobiert.** Die Rückkehr zur Originalfirmware per `restore-stock.txt`
-  und die Rettung per Reset-Taste sind nur an der GT1 Pro getestet. Heb den Backup-Ordner auf.
+  Der Installer lief auf beiden mit Bauständen kurz vor 1.0, nicht mit den Abbildern dieses Release. Das `ipcd`
+  dieses Release lief aus dem RAM auf der zweiten Kamera, und `docs/gc3-findings.md` sagt, was wo lief. Eine Kamera mit
+  abweichenden Dateien lehnt der Installer ab, außer du erzwingst es.
+- **Der Rückweg ist an der GC3 nicht ausprobiert.** `restore-stock.txt` hat die Originalfirmware einmal auf einer
+  GT1 Pro geschrieben und geprüft, mit einem Backup ohne WLAN- und Cloud-Daten. Die Rettung per Reset-Taste wurde dort
+  mit Firmware-Abbildern benutzt, nicht mit einem Backup. Heb den Backup-Ordner auf.
 - **Ein Stromausfall, während Rot schnell blinkt**, lässt den Flash halb beschrieben zurück. Der Ausweg ist die
   Rettung per Reset-Taste, und die ist an der GC3 ungetestet, siehe oben. Im schlimmsten Fall braucht die
   Kamera einen Flash-Programmer.
@@ -223,5 +223,5 @@ Dieses Projekt baut auf der Arbeit anderer auf:
 
 ## Lizenz
 
-Die Arbeit in diesem Projekt steht unter der [MIT-Lizenz](LICENSE). Das Paket enthält außerdem freie Software anderer
-unter deren eigenen Lizenzen, siehe [THIRD-PARTY.md](THIRD-PARTY.md). Zu jedem Release gehört der passende Quellcode.
+Die Arbeit in diesem Projekt steht unter der [MIT-Lizenz](LICENSE). Das Paket enthält außerdem Software anderer
+unter deren eigenen Lizenzen. [THIRD-PARTY.md](THIRD-PARTY.md) listet sie auf und sagt, was im Quellpaket jedes Release liegt.

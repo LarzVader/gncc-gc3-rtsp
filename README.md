@@ -109,9 +109,8 @@ There is also a small web page at `http://<camera>/`, with the same user name an
 ## Good to know
 
 - **Give the camera a fixed address** in your router, so its stream address stays the same.
-- **The picture is upside down for about the first minute after power-on.** The sensor of the
-  GC3 starts rotated, and the firmware sets the orientation once the stream runs, then again
-  every minute. Mount the camera the normal way up.
+- **Mount the camera the normal way up.** The sensor of the GC3 starts rotated, and the firmware
+  sets the orientation at every start of the capture, then again every minute.
 - **At night the picture goes dark for about 5 seconds every 10 minutes.** The firmware uses
   no light sensor, so it switches its IR light off now and then to check whether it is day
   yet. `ir_peek_s` in `ipcd.conf` sets the interval in seconds.
@@ -176,13 +175,14 @@ You replace the firmware of a device, at your own risk and only on a camera you 
 - **You lose the warranty** and everything the app and the cloud did: remote viewing through
   the app, cloud recordings, motion notifications, two-way talk.
 - **Tested on two cameras**, both with stock firmware 7.3.77 and the same board. That is not
-  much. The images in this release are exactly what the second camera installed and runs;
-  the first one installed an earlier build of the same sources and runs the same kernel and
-  APP image after an update. The installer refuses a camera whose files differ, unless you
-  force it.
-- **The way back has not been tried on a GC3.** Restoring the stock firmware with
-  `restore-stock.txt` and the reset button recovery were tested on the GT1 Pro only. Keep your
-  backup folder.
+  much. The installer ran on both with builds from just before 1.0, not with the images of
+  this release. The `ipcd` of this release ran from RAM on the second camera, and
+  `docs/gc3-findings.md` says what ran where. The installer refuses a camera whose files
+  differ, unless you force it.
+- **The way back has not been tried on a GC3.** `restore-stock.txt` wrote and checked the stock
+  firmware once on a GT1 Pro, from a backup without Wi-Fi settings and cloud data. The reset
+  button recovery was used there with firmware images, not with a backup. Keep your backup
+  folder.
 - **A power cut while the red LED blinks fast** leaves the flash half written. The reset button
   recovery is the way out, and on the GC3 it is untested, see above. In the worst case the
   camera needs a flash programmer.
@@ -233,6 +233,6 @@ This project stands on the work of others:
 
 ## License
 
-The work in this project is under the [MIT license](LICENSE). The package also holds free software
-by others, under its own licences: see [THIRD-PARTY.md](THIRD-PARTY.md). Each release has the source
-code that comes with it.
+The work in this project is under the [MIT license](LICENSE). The package also holds software by
+others, under its own licences. [THIRD-PARTY.md](THIRD-PARTY.md) lists it and says what is in the
+source bundle of each release.

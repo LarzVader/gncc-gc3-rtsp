@@ -48,7 +48,7 @@ messages mean that it was not.
 
 The installer knows the checksums of all files it takes from the camera, and it
 refuses to go on when one differs: it has no way to know whether the result would
-work. Your backup is on the card by then.
+work. At this point it has changed nothing on the camera and has not made a backup yet.
 
 Please open an issue with your `install.log`: the list of differing files is the
 start of supporting your firmware.
@@ -78,15 +78,68 @@ and deletes it from the card. The same way works later, when your Wi-Fi changes.
 
 ## The picture is upside down
 
-For about the first minute after power-on that is normal on the GC3: the sensor
-starts rotated, and the firmware sets it upright once the stream runs, then again
-every minute. If it stays upside down, `sensor.init` on the CONFIG partition is
-missing. Make a text file `sensor.init` in the top folder of the card with this line
-and start the camera with the card in:
+The sensor of the GC3 starts rotated, and the firmware sets it upright at every start
+of the capture, then again every minute. If the picture is upside down all the same,
+`sensor.init` on the CONFIG partition is missing. Make a text file `sensor.init` in
+the top folder of the card with this line and start the camera with the card in:
 
 ```
 i2ctransfer -f -y 0 w3@0x30 0x32 0x21 0x00
 ```
+
+Up to version 1.0 the firmware set it only once the stream ran, so for about the first
+minute after power-on the picture was upside down.
+
+## A stream stops now and then, and usually only a new connection brings it back
+
+Up to version 1.0 a stream stops when a frame ends exactly on RTP packet 65535. That
+happens about every 40 to 60 minutes per connection, and other connections to the
+camera keep running. The camera stops sending but keeps the connection open, so a player
+only notices at its own timeout, if it has one. Whether it then connects again depends on
+the player. `ipcd.log` on the card, or `/tmp/ipcd.log` and `/tmp/ipcd.log.old` on the camera
+when no card is in, show `send failed, ending session`, which can also mean a real network problem. Version
+1.0.1 fixes this.
+
+## The log without a card
+
+Without a card, `ipcd` writes its log to `/tmp/ipcd.log`, which is in RAM. Each connection adds a
+line every 5 seconds, about 0.8 MB a day. At 1 MB the file becomes `/tmp/ipcd.log.old` and a new
+one starts, so the log takes at most about 2 MB of RAM. With two connections it keeps the last 15
+to 30 hours. A restart of the camera empties it. Once the capture runs, stopping `ipcd` by hand
+leads to one: it takes the camera off the Wi-Fi, and within about 20 seconds the watchdog restarts
+the camera, as nothing feeds it any more.
+
+Up to version 1.0 nothing limited the log. With two connections that never stop, `/tmp` on a GC3
+should be full after about 12 days. The log then stops and shows nothing newer, and the camera
+should keep running. This is calculated from a three-hour run and has not been watched.
+
+With a card in the camera at power-on, the log goes to the card instead, where it has no limit, and
+the log of the start before stays there as `ipcd.log.prev`. Use an empty FAT32 card, not the one that
+holds your passwords.
+
+## The picture goes away for a moment after you change the stream settings
+
+Changing the frame rate, the bit rate, the GOP, the codec, the port, which streams are on or the
+switch `Auto IR detection` on the web page restarts the capture. The camera closes the connections
+at once, the picture is back after about 10 seconds, with a long GOP up to one GOP later, and
+players connect again if they do that by themselves. With `Auto IR detection` on, at night it
+starts in the day setting for some seconds, unless night is forced. With the switch off, the
+restart leaves the IR light off, even when night is forced; turning the switch on again brings it
+back.
+
+The same happens when the camera loses its IP address for more than 20 seconds or gets new Wi-Fi
+settings while it is online: it connects to the Wi-Fi again and then starts the capture again. After
+a lost address that takes about half a minute in all, and without a router it lasts until the router
+is back. After a lost address the camera cannot tell the players: a player only notices when it
+next sends something or at its own timeout, if it has one. If stopping the capture ever takes
+longer than a minute, the camera restarts itself.
+
+The frame rate goes up to 30, as from about 35 no stream delivers a picture. The web page refuses
+a higher value, and one saved by an older version counts as 30. It also refuses an RTSP port that
+something else on the camera listens on.
+
+Up to version 1.0 the stream stayed away in all of these cases until you powered the camera off
+and on.
 
 ## I lost the password
 
@@ -124,10 +177,52 @@ the power.
 This procedure comes from the GT1 Pro and has not been needed on a GC3 so far. The
 GC3's U-Boot has the same updater commands in it.
 
+## Updating from an older version
+
+The installer only starts from the stock firmware, so an update goes through it. Unpack the new
+package directly onto the card that holds the backup folder of this camera, enter your Wi-Fi in
+`settings.txt`, and add `restore-stock.txt` as described in
+[Going back to the stock firmware](#going-back-to-the-stock-firmware), but leave the folder
+`wifitest` on the card. The camera should then restore the stock firmware and install the new
+version right after it. `restore-stock.txt` becomes `restore-stock.done` before the restore
+starts, so this happens only once. If the camera starts the old version again, the restore did
+not start: `autoupdate.log` on the card normally says why, and the file is then called
+`restore-stock.bad`. Correct the problem and name the file `restore-stock.txt` again.
+
+What stays and what does not:
+
+- The backup folder stays on the card as it is. The installer only replaces it if the file
+  `BACKUP-OK` is missing from it.
+- The new `settings.txt` replaces your old one, so enter again what you want to keep. If you
+  needed `FORCE_UNKNOWN_FIRMWARE=yes` the first time, you need it again.
+- Your passwords change unless you set them in `settings.txt`, and so do the user name and the
+  NTP server. The access data are in `CAMERA-ACCESS-<serial number>.txt` on the card, as after a
+  new installation.
+- Other settings you changed on the camera go back to those of a new installation, such as the
+  stream settings. SSH gets a new host key, so your SSH client will warn you.
+
+What can go wrong on the way:
+
+- The stock firmware looks for the card only once, right at the start. If it misses that moment,
+  it starts as usual and goes online with your old settings, with the card still in it.
+  `RESULT.txt` then still shows the result of your last installation. Power the camera off and on
+  with the card inserted to try again.
+- If the installer stops and `RESULT.txt` says the camera was not changed, that only counts from
+  the start of the installer: the stock firmware is back. Correct the problem and power the
+  camera off and on with the card inserted. You do not need `restore-stock.txt` again. If you
+  start the camera without the card, it goes online with your old settings.
+
+**This way has not been tried on a GC3**: it was tested once on a GT1 Pro, from 1.0 to 1.0, with a
+backup that held no Wi-Fi settings and no cloud data of the stock firmware. A backup with real
+data has not been through this way on any camera.
+
 ## Going back to the stock firmware
 
-You need the folder `backup-<serial number>` the installer made. Both ways below were
-tested on the GT1 Pro, not yet on a GC3.
+You need the folder `backup-<serial number>` the installer made. Neither way below has been
+tried on a GC3. On a GT1 Pro, the easy way wrote and checked the stock firmware once, from a
+backup that held no Wi-Fi settings and no cloud data, and nobody watched the stock firmware run
+afterwards. The reset button way was used there with firmware images, not with the files of a
+backup.
 
 **The easy way, with a running RTSP firmware:**
 
