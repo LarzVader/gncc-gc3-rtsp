@@ -117,9 +117,8 @@ There is also a small web page at `http://<camera>/`, with the same user name an
 - **RTSP runs over TCP only.** A request for UDP gets `461 Unsupported Transport`, and ffmpeg,
   VLC and the others then switch to TCP by themselves. Over Wi-Fi, UDP would only lose packets.
   `rtsp_udp = 1` in `ipcd.conf` allows UDP anyway.
-- **The clock stays wrong** without an NTP server on your network, as the camera has no way
-  to the internet. Set `NTP_SERVER` in `settings.txt` if you have one. This does not affect
-  the video.
+- **The clock stays wrong**, as the camera has no way to the internet and the firmware has no
+  NTP client. This does not affect the video.
 - **Do not press the reset button during operation.** It is only for the recovery at
   power-on.
 - There is no setup portal: this firmware never opens an access point. Change your Wi-Fi with

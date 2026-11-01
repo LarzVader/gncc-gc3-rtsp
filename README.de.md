@@ -111,9 +111,8 @@ Unter `http://<kamera>/` gibt es außerdem eine kleine Webseite, mit demselben B
 - **RTSP läuft nur über TCP.** Eine Anfrage nach UDP bekommt `461 Unsupported Transport`, und ffmpeg, VLC und
   die anderen wechseln dann von selbst auf TCP. Über WLAN würde UDP nur Pakete verlieren. `rtsp_udp = 1` in
   `ipcd.conf` erlaubt UDP trotzdem.
-- **Die Uhr geht falsch**, wenn es in deinem Netz keinen NTP-Server gibt, weil die Kamera nicht ins Internet
-  kommt. Hast du einen, trag ihn in `settings.txt` unter `NTP_SERVER` ein. Auf das Video hat das keinen
-  Einfluss.
+- **Die Uhr geht falsch**, weil die Kamera nicht ins Internet kommt und die Firmware keinen NTP-Client
+  hat. Auf das Video hat das keinen Einfluss.
 - **Drück die Reset-Taste nicht im laufenden Betrieb.** Sie ist nur für die Rettung beim Einschalten gedacht.
 - Es gibt kein Einrichtungsportal: Diese Firmware öffnet nie einen eigenen WLAN-Zugangspunkt. Dein WLAN änderst
   du mit einer Datei auf der Karte, siehe [Fehlersuche](docs/troubleshooting.md#the-white-led-keeps-blinking-the-camera-does-not-get-onto-the-wi-fi)
