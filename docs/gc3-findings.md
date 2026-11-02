@@ -223,8 +223,10 @@ ROOTFS build.
   The ROOTFS image and the kernel are those of release 1.0.
 - The `ipcd` of this release was tested from RAM on the second camera, then written to both
   cameras over Wi-Fi and read back. After that the login, 8 seconds of video and the kernel log
-  were fine, and it has not yet run for long from flash. The installer did not run with these
-  images.
+  were fine. The installer did not run with these images.
+- The 32-bit RTP timestamp wraps after 13.26 hours. On both cameras, from flash, one player's
+  connection ran for over 17 hours through that point with no break, at a steady frame rate as the
+  camera counted it, and a recording connection got 600 frames in the 10 minutes around it.
 - Restarts of the capture: 12 in a row from the web page, 50 starts in all with the cases below.
   A connected client got its end after 1 to 2 seconds, and the picture was back within 7 to 8
   seconds. No restart failed, free memory stayed between 24.6 and 25.0 MB, with 18 to 22 threads,
