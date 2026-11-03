@@ -134,12 +134,14 @@ after loading the sensor configuration, which sets the register back to `0x66` (
 `S60ipcd` also runs it 15 seconds after `ipcd` started and then every 60 seconds. Measured with
 1.0.1 from RAM, about four readings a second: from before the first start of `ipcd` after a
 restart of the camera until the stream ran, the register read `0x00` throughout. With
-`sensor.init` removed, a restart of the capture set it to `0x66`, and it stayed there. A real
-power-on has not been measured with this version. Up to version 1.0 only `S60ipcd` ran the
-line: about 40 seconds after power-on the register still read `0x66`, after 85 seconds `0x00`,
-so the picture of every start was upside down for about the first minute. The ISP's own flip
-(`--flip`, `--mirror` in `ipcd`) was not tried on this sensor, as the register write does the
-job.
+`sensor.init` removed, a restart of the capture set it to `0x66`, and it stayed there. After a
+real power-on of 1.0.1 from flash, with the power off for a few seconds, the register read `0x00`
+in all 408 readings from 37 to 206 seconds after power-on, about every 0.4 seconds, and all 181
+snapshots from 48 to 138 seconds were upright; the capture started at 46 seconds. Up to version
+1.0 only `S60ipcd` ran the line: about 40 seconds after power-on the register still read `0x66`,
+after 85 seconds `0x00`, so the picture of every start was upside down for about the first
+minute. The ISP's own flip (`--flip`, `--mirror` in `ipcd`) was not tried on this sensor, as the
+register write does the job.
 
 ## Wi-Fi
 
