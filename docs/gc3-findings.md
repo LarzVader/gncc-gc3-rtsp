@@ -229,14 +229,14 @@ ROOTFS build.
   camera counted it, and a recording connection got 600 frames in the 10 minutes around it.
 - Restarts of the capture: 12 in a row from the web page, 50 starts in all with the cases below.
   A connected client got its end after 1 to 2 seconds, and the picture was back within 7 to 8
-  seconds. No restart failed, free memory stayed between 24.6 and 25.0 MB, with 18 to 22 threads,
+  seconds. No restart failed, free memory stayed between 23.8 and 25.1 MB, with 18 to 22 threads,
   and the kernel log showed no errors.
 - The cases: five changes 300 ms apart gave one restart with the last value; the outer values of
   the web page, both codecs, a GOP of 10 seconds, a forced day and night mode, the snapshot
   without the main stream; ports 80 and 22 refused, a free port taken; the address taken away:
   back after about half a minute; no DHCP answer for 100 seconds: back in the next try after that;
   a frame rate of 60 in the saved configuration: both streams run at 30.
-- Stopping `ipcd`: the camera restarts by itself and comes back after about 50 seconds. A stop
+- Stopping `ipcd`: the camera restarts by itself and comes back after about 55 seconds. A stop
   that hangs and encoders that fail were tried on a GT1 Pro only, with a test build.
 - The RTP counter, with this `ipcd` from RAM on the second camera: 8 wraps without a stop, 4 of
   them on the end of a frame. With the old `ipcd` on the first camera, 2 of 4 wraps ended in a
@@ -254,8 +254,7 @@ ROOTFS build.
   of that build, the first one the same ROOTFS and APP images and the kernel from before the
   rebuild described above.
 - Still not tested on any GC3: the reset button recovery, `restore-stock.txt`,
-  `FORCE_UNKNOWN_FIRMWARE`, the speaker, the microphone. A session long enough for the RTP
-  timestamp to wrap (13.26 hours) has not been watched.
+  `FORCE_UNKNOWN_FIRMWARE`, the speaker, the microphone.
 
 ## Open points
 
